@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico Gratuito — Bruna</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ebano: #0F0E0C;
+    --cobre: #B87333;
+    --dourado: #D4A96A;
+    --creme: #FAF7F2;
+    --creme-suave: rgba(250,247,242,0.06);
+    --cobre-suave: rgba(184,115,51,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--ebano);
+    color: var(--creme);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 60% at 10% 20%, rgba(184,115,51,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 90% 80%, rgba(212,169,106,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 60px 24px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cobre);
+    border: 1px solid rgba(184,115,51,0.4);
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 8vw, 52px);
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--creme);
+    margin-bottom: 16px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--dourado);
+  }
+
+  .subtitle {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(250,247,242,0.55);
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 40px 0;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.15s forwards;
+  }
+
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(184,115,51,0.3), transparent);
+  }
+
+  .divider span {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(250,247,242,0.3);
+    white-space: nowrap;
+  }
+
+  /* Form */
+  .form-wrapper {
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.25s forwards;
+  }
+
+  .step {
+    display: none;
+  }
+
+  .step.active {
+    display: block;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .step-indicator {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  .step-dot {
+    width: 24px;
+    height: 2px;
+    background: rgba(250,247,242,0.15);
+    border-radius: 2px;
+    transition: all 0.4s ease;
+  }
+
+  .step-dot.active {
+    background: var(--cobre);
+    width: 36px;
+  }
+
+  .step-dot.done {
+    background: rgba(184,115,51,0.4);
+  }
+
+  .question-block {
+    margin-bottom: 32px;
+  }
+
+  .question-label {
+    display: block;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--creme);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .question-hint {
+    font-size: 12px;
+    color: rgba(250,247,242,0.35);
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  /* Radio options */
+  .options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .option-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 1px solid rgba(250,247,242,0.08);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: var(--creme-suave);
+    font-size: 13px;
+    color: rgba(250,247,242,0.7);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-label::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(184,115,51,0.08), transparent);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .option-label:hover {
+    border-color: rgba(184,115,51,0.3);
+    color: var(--creme);
+  }
+
+  .option-label:hover::before {
+    opacity: 1;
+  }
+
+  .option-label input[type="radio"],
+  .option-label input[type="checkbox"] {
+    display: none;
+  }
+
+  .option-label.selected {
+    border-color: var(--cobre);
+    color: var(--creme);
+    background: var(--cobre-suave);
+  }
+
+  .option-label.selected::before {
+    opacity: 1;
+  }
+
+  .radio-dot {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid rgba(250,247,242,0.25);
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.25s ease;
+    z-index: 1;
+  }
+
+  .option-label.selected .radio-dot {
+    border-color: var(--cobre);
+    background: var(--cobre);
+  }
+
+  .option-label.selected .radio-dot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 5px;
+    height: 5px;
+    background: white;
+    border-radius: 50%;
+  }
+
+  .check-dot {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid rgba(250,247,242,0.25);
+    border-radius: 3px;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.25s ease;
+    z-index: 1;
+  }
+
+  .option-label.selected .check-dot {
+    border-color: var(--cobre);
+    background: var(--cobre);
+  }
+
+  .option-label.selected .check-dot::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    color: white;
+    line-height: 1;
+  }
+
+  .option-text {
+    z-index: 1;
+    line-height: 1.4;
+  }
+
+  /* Text inputs */
+  .input-field {
+    width: 100%;
+    background: var(--creme-suave);
+    border: 1px solid rgba(250,247,242,0.08);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--creme);
+    outline: none;
+    transition: border-color 0.25s ease;
+  }
+
+  .input-field::placeholder {
+    color: rgba(250,247,242,0.25);
+  }
+
+  .input-field:focus {
+    border-color: rgba(184,115,51,0.5);
+  }
+
+  /* Contact fields */
+  .contact-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  /* Navigation buttons */
+  .nav-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 40px;
+  }
+
+  .btn-back {
+    padding: 14px 24px;
+    background: transparent;
+    border: 1px solid rgba(250,247,242,0.12);
+    border-radius: 8px;
+    color: rgba(250,247,242,0.4);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .btn-back:hover {
+    border-color: rgba(250,247,242,0.25);
+    color: rgba(250,247,242,0.7);
+  }
+
+  .btn-next {
+    flex: 1;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, var(--cobre), var(--dourado));
+    border: none;
+    border-radius: 8px;
+    color: var(--ebano);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.02em;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-next::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.1);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .btn-next:hover::after {
+    opacity: 1;
+  }
+
+  .btn-next:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Error */
+  .error-msg {
+    font-size: 11px;
+    color: #e07070;
+    margin-top: 8px;
+    display: none;
+  }
+
+  .error-msg.visible {
+    display: block;
+  }
+
+  /* Success screen */
+  .success-screen {
+    display: none;
+    text-align: center;
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  .success-screen.visible {
+    display: block;
+  }
+
+  .success-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cobre), var(--dourado));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 32px;
+    font-size: 28px;
+  }
+
+  .success-screen h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 6vw, 40px);
+    font-weight: 300;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .success-screen h2 em {
+    font-style: italic;
+    color: var(--dourado);
+  }
+
+  .success-screen p {
+    font-size: 14px;
+    color: rgba(250,247,242,0.5);
+    line-height: 1.7;
+    max-width: 400px;
+    margin: 0 auto 40px;
+  }
+
+  .btn-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 36px;
+    background: linear-gradient(135deg, var(--cobre), var(--dourado));
+    border: none;
+    border-radius: 8px;
+    color: var(--ebano);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-whatsapp:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(184,115,51,0.3);
+  }
+
+  .whatsapp-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .success-note {
+    margin-top: 20px;
+    font-size: 11px;
+    color: rgba(250,247,242,0.2);
+    letter-spacing: 0.05em;
+  }
+
+  /* Progress */
+  .progress-bar {
+    width: 100%;
+    height: 2px;
+    background: rgba(250,247,242,0.06);
+    border-radius: 2px;
+    margin-bottom: 48px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cobre), var(--dourado));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 40px 20px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">Diagnóstico Gratuito</div>
+    <h1>Onde está o <em>potencial</em><br>escondido na sua empresa?</h1>
+    <p class="subtitle">8 perguntas rápidas para entender como sua operação está hoje — e onde a inteligência artificial pode transformar seus resultados.</p>
+  </div>
+
+  <div class="divider"><span>preencha abaixo</span></div>
+
+  <!-- Form -->
+  <div class="form-wrapper" id="formWrapper">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+
+    <div class="step-indicator" id="stepIndicator"></div>
+
+    <!-- STEP 1 -->
+    <div class="step active" id="step-1">
+      <div class="question-block">
+        <span class="question-label">1. Quantos funcionários tem sua empresa?</span>
+        <span class="question-hint">Contando você e colaboradores diretos</span>
+        <div class="options-grid" data-name="funcionarios" data-type="radio">
+          <label class="option-label"><input type="radio" name="funcionarios" value="Só eu"><span class="radio-dot"></span><span class="option-text">Só eu</span></label>
+          <label class="option-label"><input type="radio" name="funcionarios" value="2 a 5"><span class="radio-dot"></span><span class="option-text">2 a 5 pessoas</span></label>
+          <label class="option-label"><input type="radio" name="funcionarios" value="6 a 20"><span class="radio-dot"></span><span class="option-text">6 a 20 pessoas</span></label>
+          <label class="option-label"><input type="radio" name="funcionarios" value="21 a 50"><span class="radio-dot"></span><span class="option-text">21 a 50 pessoas</span></label>
+          <label class="option-label"><input type="radio" name="funcionarios" value="Mais de 50"><span class="radio-dot"></span><span class="option-text">Mais de 50 pessoas</span></label>
+        </div>
+        <span class="error-msg" id="err-1">Selecione uma opção para continuar.</span>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" id="step-2">
+      <div class="question-block">
+        <span class="question-label">2. Qual é o maior problema da sua empresa hoje?</span>
+        <span class="question-hint">Escolha o que mais te tira o sono</span>
+        <div class="options-grid" data-name="gargalo" data-type="radio">
+          <label class="option-label"><input type="radio" name="gargalo" value="Vendas e captação de clientes"><span class="radio-dot"></span><span class="option-text">Vendas e captação de clientes</span></label>
+          <label class="option-label"><input type="radio" name="gargalo" value="Atendimento ao cliente"><span class="radio-dot"></span><span class="option-text">Atendimento ao cliente</span></label>
+          <label class="option-label"><input type="radio" name="gargalo" value="Processos internos desorganizados"><span class="radio-dot"></span><span class="option-text">Processos internos desorganizados</span></label>
+          <label class="option-label"><input type="radio" name="gargalo" value="Controle financeiro"><span class="radio-dot"></span><span class="option-text">Controle financeiro</span></label>
+          <label class="option-label"><input type="radio" name="gargalo" value="Marketing e presença digital"><span class="radio-dot"></span><span class="option-text">Marketing e presença digital</span></label>
+          <label class="option-label"><input type="radio" name="gargalo" value="Não sei identificar"><span class="radio-dot"></span><span class="option-text">Não sei identificar com clareza</span></label>
+        </div>
+        <span class="error-msg" id="err-2">Selecione uma opção para continuar.</span>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step" id="step-3">
+      <div class="question-block">
+        <span class="question-label">3. Como você gerencia seus clientes e vendas?</span>
+        <span class="question-hint">Seja honesto — não tem resposta certa</span>
+        <div class="options-grid" data-name="crm" data-type="radio">
+          <label class="option-label"><input type="radio" name="crm" value="Não gerencio formalmente"><span class="radio-dot"></span><span class="option-text">Não gerencio formalmente</span></label>
+          <label class="option-label"><input type="radio" name="crm" value="WhatsApp e anotações"><span class="radio-dot"></span><span class="option-text">WhatsApp e anotações</span></label>
+          <label class="option-label"><input type="radio" name="crm" value="Planilhas"><span class="radio-dot"></span><span class="option-text">Planilhas</span></label>
+          <label class="option-label"><input type="radio" name="crm" value="CRM como HubSpot, Pipedrive ou similar"><span class="radio-dot"></span><span class="option-text">CRM (HubSpot, Pipedrive ou similar)</span></label>
+          <label class="option-label"><input type="radio" name="crm" value="Sistema próprio ou ERP"><span class="radio-dot"></span><span class="option-text">Sistema próprio ou ERP</span></label>
+        </div>
+        <span class="error-msg" id="err-3">Selecione uma opção para continuar.</span>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step" id="step-4">
+      <div class="question-block">
+        <span class="question-label">4. Você tem dados para saber o que funciona no seu negócio?</span>
+        <span class="question-hint">Como você toma suas decisões hoje</span>
+        <div class="options-grid" data-name="dados" data-type="radio">
+          <label class="option-label"><input type="radio" name="dados" value="Decido mais na intuição"><span class="radio-dot"></span><span class="option-text">Decido mais na intuição e experiência</span></label>
+          <label class="option-label"><input type="radio" name="dados" value="Tenho alguns dados mas não confio totalmente"><span class="radio-dot"></span><span class="option-text">Tenho alguns dados, mas não confio totalmente</span></label>
+          <label class="option-label"><input type="radio" name="dados" value="Tenho relatórios mas não uso muito"><span class="radio-dot"></span><span class="option-text">Tenho relatórios, mas não uso muito</span></label>
+          <label class="option-label"><input type="radio" name="dados" value="Tenho relatórios regulares e uso para decidir"><span class="radio-dot"></span><span class="option-text">Tenho relatórios regulares e uso para decidir</span></label>
+        </div>
+        <span class="error-msg" id="err-4">Selecione uma opção para continuar.</span>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step" id="step-5">
+      <div class="question-block">
+        <span class="question-label">5. Quais ferramentas digitais usa na operação?</span>
+        <span class="question-hint">Pode selecionar mais de uma</span>
+        <div class="options-grid" data-name="ferramentas" data-type="checkbox">
+          <label class="option-label"><input type="checkbox" name="ferramentas" value="Google Workspace (Drive, Gmail, Meet)"><span class="check-dot"></span><span class="option-text">Google Workspace (Drive, Gmail, Meet)</span></label>
+          <label class="option-label"><input type="checkbox" name="ferramentas" value="ERP ou sistema de gestão"><span class="check-dot"></span><span class="option-text">ERP ou sistema de gestão</span></label>
+          <label class="option-label"><input type="checkbox" name="ferramentas" value="CRM de vendas"><span class="check-dot"></span><span class="option-text">CRM de vendas</span></label>
+          <label class="option-label"><input type="checkbox" name="ferramentas" value="Automação de marketing"><span class="check-dot"></span><span class="option-text">Automação de marketing</span></label>
+          <label class="option-label"><input type="checkbox" name="ferramentas" value="Chatbot de atendimento"><span class="check-dot"></span><span class="option-text">Chatbot de atendimento</span></label>
+          <label class="option-label"><input type="checkbox" name="ferramentas" value="Nenhuma estruturada"><span class="check-dot"></span><span class="option-text">Nenhuma estruturada</span></label>
+        </div>
+        <span class="error-msg" id="err-5">Selecione pelo menos uma opção.</span>
+      </div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="step" id="step-6">
+      <div class="question-block">
+        <span class="question-label">6. Você já usou alguma ferramenta de Inteligência Artificial?</span>
+        <span class="question-hint">ChatGPT, Copilot, Gemini, etc.</span>
+        <div class="options-grid" data-name="ia_uso" data-type="radio">
+          <label class="option-label"><input type="radio" name="ia_uso" value="Nunca ouvi falar de IA"><span class="radio-dot"></span><span class="option-text">Nunca ouvi falar de IA</span></label>
+          <label class="option-label"><input type="radio" name="ia_uso" value="Ouvi falar mas nunca usei"><span class="radio-dot"></span><span class="option-text">Já ouvi falar, mas nunca usei</span></label>
+          <label class="option-label"><input type="radio" name="ia_uso" value="Usei algumas vezes por curiosidade"><span class="radio-dot"></span><span class="option-text">Usei algumas vezes por curiosidade</span></label>
+          <label class="option-label"><input type="radio" name="ia_uso" value="Uso regularmente no trabalho"><span class="radio-dot"></span><span class="option-text">Uso regularmente no trabalho</span></label>
+          <label class="option-label"><input type="radio" name="ia_uso" value="Temos IA integrada em processos da empresa"><span class="radio-dot"></span><span class="option-text">Já temos IA integrada em processos da empresa</span></label>
+        </div>
+        <span class="error-msg" id="err-6">Selecione uma opção para continuar.</span>
+      </div>
+    </div>
+
+    <!-- STEP 7 -->
+    <div class="step" id="step-7">
+      <div class="question-block">
+        <span class="question-label">7. Qual é sua maior barreira para adotar IA hoje?</span>
+        <span class="question-hint">Seja honesto — isso ajuda a personalizar seu diagnóstico</span>
+        <div class="options-grid" data-name="barreira" data-type="radio">
+          <label class="option-label"><input type="radio" name="barreira" value="Não sei por onde começar"><span class="radio-dot"></span><span class="option-text">Não sei por onde começar</span></label>
+          <label class="option-label"><input type="radio" name="barreira" value="Custo de implementação"><span class="radio-dot"></span><span class="option-text">Custo de implementação</span></label>
+          <label class="option-label"><input type="radio" name="barreira" value="Desconfiança dos resultados"><span class="radio-dot"></span><span class="option-text">Desconfiança dos resultados</span></label>
+          <label class="option-label"><input type="radio" name="barreira" value="Falta de tempo para aprender"><span class="radio-dot"></span><span class="option-text">Falta de tempo para aprender</span></label>
+          <label class="option-label"><input type="radio" name="barreira" value="Resistência da equipe"><span class="radio-dot"></span><span class="option-text">Resistência da equipe</span></label>
+          <label class="option-label"><input type="radio" name="barreira" value="Não vejo aplicação clara no meu negócio"><span class="radio-dot"></span><span class="option-text">Não vejo aplicação clara no meu negócio</span></label>
+        </div>
+        <span class="error-msg" id="err-7">Selecione uma opção para continuar.</span>
+      </div>
+    </div>
+
+    <!-- STEP 8 — Contato -->
+    <div class="step" id="step-8">
+      <div class="question-block">
+        <span class="question-label">8. Quase lá. Para onde envio seu diagnóstico?</span>
+        <span class="question-hint">Entrarei em contato para aprofundar os resultados com você</span>
+        <div class="contact-grid">
+          <input type="text" class="input-field" id="nome" placeholder="Seu nome completo" autocomplete="name">
+          <input type="email" class="input-field" id="email" placeholder="Seu melhor e-mail" autocomplete="email">
+          <input type="tel" class="input-field" id="telefone" placeholder="WhatsApp com DDD" autocomplete="tel">
+        </div>
+        <span class="error-msg" id="err-8">Preencha todos os campos para continuar.</span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons" id="navButtons">
+      <button class="btn-back" id="btnBack" style="display:none" onclick="prevStep()">← Voltar</button>
+      <button class="btn-next" id="btnNext" onclick="nextStep()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- Success Screen -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✓</div>
+    <h2>Respostas<br><em>recebidas com sucesso</em></h2>
+    <p>Analisarei os dados da sua empresa e entrarei em contato em breve para apresentar seu diagnóstico personalizado. Se quiser agilizar, fale comigo agora pelo WhatsApp.</p>
+    <a class="btn-whatsapp" id="whatsappBtn" href="#" target="_blank">
+      <svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      Falar no WhatsApp agora
+    </a>
+    <p class="success-note">Ou aguarde — entrarei em contato em até 24h</p>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer style="
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 32px 24px 40px;
+  border-top: 1px solid rgba(250,247,242,0.06);
+  margin-top: 0;
+">
+  <p style="
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--creme);
+    letter-spacing: 0.03em;
+    margin-bottom: 6px;
+  ">Bruna Dorneles <span style="color: var(--cobre); font-style: italic;">|</span> Operações Inteligentes</p>
+  <a href="https://instagram.com/consultoriabrunadorneles" target="_blank" style="
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(250,247,242,0.3);
+    text-decoration: none;
+    transition: color 0.25s ease;
+  " onmouseover="this.style.color='#B87333'" onmouseout="this.style.color='rgba(250,247,242,0.3)'">@consultoriabrunadorneles</a>
+</footer>
+
+<script>
+  const TOTAL_STEPS = 8;
+  let currentStep = 1;
+  const formData = {};
+
+  // Build step indicators
+  const indicator = document.getElementById('stepIndicator');
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i === 1 ? ' active' : '');
+    dot.id = 'dot-' + i;
+    indicator.appendChild(dot);
+  }
+
+  // Update progress
+  function updateProgress() {
+    const pct = ((currentStep - 1) / TOTAL_STEPS) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    for (let i = 1; i <= TOTAL_STEPS; i++) {
+      const dot = document.getElementById('dot-' + i);
+      dot.className = 'step-dot' + (i === currentStep ? ' active' : i < currentStep ? ' done' : '');
+    }
+    document.getElementById('btnBack').style.display = currentStep > 1 ? 'block' : 'none';
+    document.getElementById('btnNext').textContent = currentStep === TOTAL_STEPS ? 'Concluir diagnóstico ✓' : 'Continuar →';
+  }
+
+  // Option click handlers
+  document.querySelectorAll('.options-grid').forEach(grid => {
+    const type = grid.dataset.type;
+    const name = grid.dataset.name;
+    grid.querySelectorAll('.option-label').forEach(label => {
+      label.addEventListener('click', () => {
+        if (type === 'radio') {
+          grid.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+          label.classList.add('selected');
+          label.querySelector('input').checked = true;
+          formData[name] = label.querySelector('input').value;
+        } else {
+          label.classList.toggle('selected');
+          const input = label.querySelector('input');
+          input.checked = !input.checked;
+          const vals = [...grid.querySelectorAll('input:checked')].map(i => i.value);
+          formData[name] = vals;
+        }
+      });
+    });
+  });
+
+  function validateStep(step) {
+    const errEl = document.getElementById('err-' + step);
+    if (step < 8) {
+      const grid = document.querySelector('#step-' + step + ' .options-grid');
+      const type = grid.dataset.type;
+      const name = grid.dataset.name;
+      if (type === 'radio') {
+        if (!formData[name]) { errEl.classList.add('visible'); return false; }
+      } else {
+        const vals = formData[name];
+        if (!vals || vals.length === 0) { errEl.classList.add('visible'); return false; }
+      }
+    } else {
+      const nome = document.getElementById('nome').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const tel = document.getElementById('telefone').value.trim();
+      if (!nome || !email || !tel) { errEl.classList.add('visible'); return false; }
+      if (!/\S+@\S+\.\S+/.test(email)) { errEl.textContent = 'E-mail inválido.'; errEl.classList.add('visible'); return false; }
+      formData['nome'] = nome;
+      formData['email'] = email;
+      formData['telefone'] = tel;
+    }
+    if (errEl) errEl.classList.remove('visible');
+    return true;
+  }
+
+  function nextStep() {
+    if (!validateStep(currentStep)) return;
+    if (currentStep === TOTAL_STEPS) {
+      showSuccess();
+      return;
+    }
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    currentStep++;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function prevStep() {
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    currentStep--;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showSuccess() {
+    // Build WhatsApp message
+    const ferramentas = Array.isArray(formData['ferramentas']) ? formData['ferramentas'].join(', ') : formData['ferramentas'];
+    const msg = `Olá! Acabei de preencher o formulário de diagnóstico.
+
+*Nome:* ${formData['nome']}
+*Empresa:* ${formData['funcionarios']} funcionários
+*Gargalo principal:* ${formData['gargalo']}
+*Gestão de clientes:* ${formData['crm']}
+*Uso de dados:* ${formData['dados']}
+*Ferramentas:* ${ferramentas}
+*Experiência com IA:* ${formData['ia_uso']}
+*Maior barreira:* ${formData['barreira']}`;
+
+    const waLink = `https://wa.me/5516996409484?text=${encodeURIComponent(msg)}`;
+    document.getElementById('whatsappBtn').href = waLink;
+
+    document.getElementById('formWrapper').style.display = 'none';
+    document.querySelector('.header').style.display = 'none';
+    document.querySelector('.divider').style.display = 'none';
+    document.getElementById('successScreen').classList.add('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  updateProgress();
+</script>
+</body>
+</html>
