@@ -728,16 +728,25 @@
     const type = grid.dataset.type;
     const name = grid.dataset.name;
     grid.querySelectorAll('.option-label').forEach(label => {
-      label.addEventListener('click', () => {
+      label.addEventListener('click', (e) => {
+        e.preventDefault();
+        const input = label.querySelector('input');
         if (type === 'radio') {
-          grid.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+          grid.querySelectorAll('.option-label').forEach(l => {
+            l.classList.remove('selected');
+            l.querySelector('input').checked = false;
+          });
           label.classList.add('selected');
-          label.querySelector('input').checked = true;
-          formData[name] = label.querySelector('input').value;
+          input.checked = true;
+          formData[name] = input.value;
         } else {
-          label.classList.toggle('selected');
-          const input = label.querySelector('input');
-          input.checked = !input.checked;
+          const wasChecked = input.checked;
+          input.checked = !wasChecked;
+          if (input.checked) {
+            label.classList.add('selected');
+          } else {
+            label.classList.remove('selected');
+          }
           const vals = [...grid.querySelectorAll('input:checked')].map(i => i.value);
           formData[name] = vals;
         }
