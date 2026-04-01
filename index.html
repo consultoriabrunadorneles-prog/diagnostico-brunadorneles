@@ -808,7 +808,7 @@
 
 *Nome:* ${formData['nome']}
 *Empresa:* ${formData['funcionarios']} funcionários
-*Gargalo principal:* ${formData['gargalo']}
+*Maior problema:* ${formData['gargalo']}
 *Gestão de clientes:* ${formData['crm']}
 *Uso de dados:* ${formData['dados']}
 *Ferramentas:* ${ferramentas}
@@ -817,6 +817,24 @@
 
     const waLink = `https://wa.me/5516996409484?text=${encodeURIComponent(msg)}`;
     document.getElementById('whatsappBtn').href = waLink;
+
+    // Send to Formspree (email)
+    fetch('https://formspree.io/f/xreoloyp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: formData['nome'],
+        email: formData['email'],
+        telefone: formData['telefone'],
+        funcionarios: formData['funcionarios'],
+        maior_problema: formData['gargalo'],
+        gestao_clientes: formData['crm'],
+        uso_de_dados: formData['dados'],
+        ferramentas: ferramentas,
+        experiencia_ia: formData['ia_uso'],
+        maior_barreira: formData['barreira']
+      })
+    }).catch(() => {});
 
     document.getElementById('formWrapper').style.display = 'none';
     document.querySelector('.header').style.display = 'none';
